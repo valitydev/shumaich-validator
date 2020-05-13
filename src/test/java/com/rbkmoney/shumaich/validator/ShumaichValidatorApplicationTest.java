@@ -1,4 +1,4 @@
-package com.rbkmoney.shumaichvalidator;
+package com.rbkmoney.shumaich.validator;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
