@@ -1,6 +1,5 @@
 package com.rbkmoney.shumaich.validator.domain;
 
-import com.rbkmoney.damsel.accounter.Account;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OperationLog {
+
     private String planId;
     private Long batchId;
     private OperationType operationType;

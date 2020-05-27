@@ -48,8 +48,6 @@ public class KafkaConfig {
     private String bootstrapServers;
     @Value("${kafka.consumer.concurrency}")
     private int concurrency;
-    @Value("${retry-policy.maxAttempts}")
-    int maxAttempts;
 
     @Bean
     public Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties) {
