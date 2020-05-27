@@ -1,9 +1,9 @@
 package com.rbkmoney.shumaich.validator.config;
 
 import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
-import com.rbkmoney.shumaich.validator.kafka.serde.OperationLogDeserializer;
 import com.rbkmoney.shumaich.validator.config.properties.KafkaSslProperties;
 import com.rbkmoney.shumaich.validator.domain.OperationLog;
+import com.rbkmoney.shumaich.validator.kafka.serde.OperationLogDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;

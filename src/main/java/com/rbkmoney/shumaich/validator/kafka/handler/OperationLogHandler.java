@@ -3,7 +3,6 @@ package com.rbkmoney.shumaich.validator.kafka.handler;
 import com.rbkmoney.shumaich.validator.dao.RecordDao;
 import com.rbkmoney.shumaich.validator.domain.*;
 import com.rbkmoney.shumaich.validator.repo.OperationRecordRepo;
-import com.rbkmoney.shumaich.validator.utils.CheckUtils;
 import com.rbkmoney.shumaich.validator.utils.FilterUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.rbkmoney.shumaich.validator.domain.OperationType.*;
 import static com.rbkmoney.shumaich.validator.utils.CheckUtils.*;
