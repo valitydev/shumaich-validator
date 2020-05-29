@@ -18,7 +18,7 @@ public class CheckUtils {
                 finalOps.stream().map(OperationLog::getOperationType),
                 operationRecords.stream().map(OperationRecord::getOperationType)
         )
-                .filter(operationType -> operationType.equals(HOLD))
+                .filter(operationType -> !operationType.equals(HOLD))
                 .distinct()
                 .count() == 2;
     }

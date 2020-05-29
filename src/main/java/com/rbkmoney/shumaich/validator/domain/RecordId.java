@@ -15,13 +15,13 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RecordId implements Serializable {
 
-    private String planId;
-    private Long batchId;
-    private String account;
+    String planId;
+    Long batchId;
+    String accountId;
 
     public RecordId(OperationLog operationLog) {
         this.planId = operationLog.getPlanId();
         this.batchId = operationLog.getBatchId();
-        this.account = operationLog.getAccount().getId();
+        this.accountId = operationLog.getAccount().getId();
     }
 }

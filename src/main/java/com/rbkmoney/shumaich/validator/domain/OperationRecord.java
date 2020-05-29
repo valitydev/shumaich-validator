@@ -1,17 +1,19 @@
 package com.rbkmoney.shumaich.validator.domain;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-public class OperationRecord extends Record {
+public class OperationRecord {
+
+    @EmbeddedId
+    RecordId id;
 
     @Enumerated
     private OperationType operationType;

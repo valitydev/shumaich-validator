@@ -1,18 +1,20 @@
 package com.rbkmoney.shumaich.validator.domain;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-@Getter
-@Setter
+@Data
 @Entity
 @NoArgsConstructor
-public class FailureRecord extends Record {
+public class FailureRecord {
+
+    @EmbeddedId
+    RecordId id;
 
     @Enumerated(value = EnumType.STRING)
     private FailureReason reason;

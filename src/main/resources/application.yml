@@ -62,6 +62,4 @@ kafka:
     max-poll-interval-ms: 30000
     session-timeout-ms: 30000
     concurrency: 7
-    topic:
-      id: operation-log-topic
-      enabled: false
+    topic: "operation_log"

@@ -3,19 +3,21 @@ package com.rbkmoney.shumaich.validator.kafka.handler;
 import com.rbkmoney.shumaich.validator.dao.RecordDao;
 import com.rbkmoney.shumaich.validator.domain.*;
 import com.rbkmoney.shumaich.validator.repo.OperationRecordRepo;
-import com.rbkmoney.shumaich.validator.utils.FilterUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.rbkmoney.shumaich.validator.domain.OperationType.*;
 import static com.rbkmoney.shumaich.validator.utils.CheckUtils.*;
+import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterOperationLogByRecordId;
+import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterOperationRecordByRecordId;
 
 @Slf4j
 @Service
@@ -37,13 +39,12 @@ public class OperationLogHandler {
                 .map(ConsumerRecord::value)
                 .collect(Collectors.groupingBy(OperationLog::getOperationType));
 
-        //processing messages
         for (RecordId recordId : operationLogsGroupedByRecordId.keySet()) {
 
-            final List<OperationLog> holds = FilterUtils.filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.get(HOLD), recordId);
-            final List<OperationLog> commits = FilterUtils.filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.get(COMMIT), recordId);
-            final List<OperationLog> rollbacks = FilterUtils.filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.get(ROLLBACK), recordId);
-            List<OperationRecord> dbRecords = FilterUtils.filterOperationRecordByRecordId(operationRecordsInDb, recordId);
+            final List<OperationLog> holds = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(HOLD, List.of()), recordId);
+            final List<OperationLog> commits = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(COMMIT, List.of()), recordId);
+            final List<OperationLog> rollbacks = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(ROLLBACK, List.of()), recordId);
+            List<OperationRecord> dbRecords = filterOperationRecordByRecordId(operationRecordsInDb, recordId);
 
             List<FailureRecord> failureRecords = new ArrayList<>();
 

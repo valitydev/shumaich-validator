@@ -157,10 +157,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>easyway</artifactId>
-            <version>0.1.0</version>
-            <scope>test</scope>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.10.5</version>
         </dependency>
     </dependencies>
 
