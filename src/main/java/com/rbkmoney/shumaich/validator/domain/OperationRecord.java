@@ -1,5 +1,6 @@
 package com.rbkmoney.shumaich.validator.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,18 +11,13 @@ import javax.persistence.Enumerated;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class OperationRecord {
 
     @EmbeddedId
-    RecordId id;
+    private RecordId id;
 
     @Enumerated
     private OperationType operationType;
     private Long batchHash;
-
-    public OperationRecord(RecordId recordId, OperationType operationType, Long batchHash) {
-        this.id = recordId;
-        this.operationType = operationType;
-        this.batchHash = batchHash;
-    }
 }

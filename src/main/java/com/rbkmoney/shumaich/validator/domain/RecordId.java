@@ -15,9 +15,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RecordId implements Serializable {
 
-    String planId;
-    Long batchId;
-    String accountId;
+    private String planId;
+    private Long batchId;
+    private String accountId;
 
     public RecordId(OperationLog operationLog) {
         this.planId = operationLog.getPlanId();

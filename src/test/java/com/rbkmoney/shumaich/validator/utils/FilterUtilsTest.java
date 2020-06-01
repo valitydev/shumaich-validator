@@ -24,17 +24,4 @@ public class FilterUtilsTest {
         );
     }
 
-    @Test
-    public void operationLogsFiltered() {
-        final List<OperationLog> operationLogs = List.of(TestData.operationLog("acc1", "plan1", 1L, null, null),
-                TestData.operationLog("acc1", "plan1", 2L, null, null),
-                TestData.operationLog("acc2", "plan1", 1L, null, null),
-                TestData.operationLog("acc1", "plan2", 1L, null, null));
-
-        Assert.assertEquals(
-                1,
-                FilterUtils.filterOperationLogByRecordId(operationLogs, new RecordId("plan1", 1L, "acc2")).size()
-        );
-    }
-
 }

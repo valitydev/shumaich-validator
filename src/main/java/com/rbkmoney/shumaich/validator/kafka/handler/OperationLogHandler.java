@@ -1,5 +1,7 @@
 package com.rbkmoney.shumaich.validator.kafka.handler;
 
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Streams;
 import com.rbkmoney.shumaich.validator.dao.RecordDao;
 import com.rbkmoney.shumaich.validator.domain.*;
 import com.rbkmoney.shumaich.validator.repo.OperationRecordRepo;
@@ -9,14 +11,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.rbkmoney.shumaich.validator.domain.OperationType.*;
 import static com.rbkmoney.shumaich.validator.utils.CheckUtils.*;
-import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterOperationLogByRecordId;
 import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterOperationRecordByRecordId;
 
 @Slf4j
@@ -35,47 +36,55 @@ public class OperationLogHandler {
 
         List<OperationRecord> operationRecordsInDb = operationRecordRepo.findAllById(operationLogsGroupedByRecordId.keySet());
 
-        final Map<OperationType, List<OperationLog>> arrivedOperationLogsGroupedByOperationType = messages.stream()
+        ImmutableTable<RecordId, OperationType, List<OperationLog>> recordIdOperationTypeTable = messages.stream()
                 .map(ConsumerRecord::value)
-                .collect(Collectors.groupingBy(OperationLog::getOperationType));
+                .collect(ImmutableTable.toImmutableTable(
+                        RecordId::new,
+                        OperationLog::getOperationType,
+                        Arrays::asList,
+                        (a, b) -> Streams.concat(a.stream(), b.stream()).collect(Collectors.toList())));
+
+        List<FailureRecord> failureRecordsToSave = new ArrayList<>();
+        List<OperationRecord> dbRecordsToSave = new ArrayList<>();
 
         for (RecordId recordId : operationLogsGroupedByRecordId.keySet()) {
 
-            final List<OperationLog> holds = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(HOLD, List.of()), recordId);
-            final List<OperationLog> commits = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(COMMIT, List.of()), recordId);
-            final List<OperationLog> rollbacks = filterOperationLogByRecordId(arrivedOperationLogsGroupedByOperationType.getOrDefault(ROLLBACK, List.of()), recordId);
+            final List<OperationLog> holds = recordIdOperationTypeTable.get(recordId, HOLD);
+            final List<OperationLog> commits = recordIdOperationTypeTable.get(recordId, COMMIT);
+            final List<OperationLog> rollbacks = recordIdOperationTypeTable.get(recordId, ROLLBACK);
+
             List<OperationRecord> dbRecords = filterOperationRecordByRecordId(operationRecordsInDb, recordId);
 
-            List<FailureRecord> failureRecords = new ArrayList<>();
 
-            processHolds(recordId, holds, dbRecords, failureRecords);
-            processFinalOps(recordId, commits, dbRecords, failureRecords);
-            processFinalOps(recordId, rollbacks, dbRecords, failureRecords);
+            processHolds(recordId, holds, dbRecords, failureRecordsToSave);
+            processFinalOps(recordId, commits, dbRecords, failureRecordsToSave);
+            processFinalOps(recordId, rollbacks, dbRecords, failureRecordsToSave);
 
-            if ((!commits.isEmpty() && !rollbacks.isEmpty())) {
-                failureRecords.add(getFailureRecord(recordId, FailureReason.FINAL_OPERATIONS_MIXED));
+            if (commits != null && rollbacks != null &&
+                    (!commits.isEmpty() && !rollbacks.isEmpty())) {
+                failureRecordsToSave.add(getFailureRecord(recordId, FailureReason.FINAL_OPERATIONS_MIXED));
             }
-
-            recordDao.save(dbRecords, failureRecords);
+            dbRecordsToSave.addAll(dbRecords);
         }
 
+        recordDao.save(dbRecordsToSave, failureRecordsToSave);
     }
 
-    private void processHolds(RecordId recordId, List<OperationLog> holdsForRecordId, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
-        if (holdsForRecordId.isEmpty()) {
+    private void processHolds(RecordId recordId, List<OperationLog> holds, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
+        if (holds == null || holds.isEmpty()) {
             return;
         }
 
         if (dbRecords.isEmpty()) {
-            if (checksumConsistent(holdsForRecordId)) {
-                dbRecords.add(getOperationRecord(holdsForRecordId));
+            if (checksumConsistent(holds)) {
+                dbRecords.add(getOperationRecord(holds));
             } else {
                 failureRecords.add(getFailureRecord(recordId, FailureReason.DIFFERENT_OPERATION_ALREADY_EXISTS));
-                dbRecords.add(getOperationRecord(List.of(holdsForRecordId.get(0)))); // we had an empty base, but there 2 different holds. So write 1 of them.
+                dbRecords.add(getOperationRecord(List.of(holds.get(0)))); // we had an empty base, but there 2 different holds. So write 1 of them.
             }
         }
 
-        if (containsHold(dbRecords) && !checksumConsistent(dbRecords, holdsForRecordId)) {
+        if (containsHold(dbRecords) && !checksumConsistent(dbRecords, holds)) {
             failureRecords.add(getFailureRecord(recordId, FailureReason.DIFFERENT_OPERATION_ALREADY_EXISTS));
         }
 
@@ -85,7 +94,7 @@ public class OperationLogHandler {
     }
 
     private void processFinalOps(RecordId recordId, List<OperationLog> finalOps, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
-        if (finalOps.isEmpty()) {
+        if (finalOps == null || finalOps.isEmpty()) {
             return;
         }
 

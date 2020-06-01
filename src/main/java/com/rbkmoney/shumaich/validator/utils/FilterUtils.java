@@ -18,11 +18,4 @@ public class FilterUtils {
                 .collect(Collectors.toList());
     }
 
-
-    public static List<OperationLog> filterOperationLogByRecordId(List<OperationLog> operationLogs, RecordId recordId) {
-        return operationLogs.stream()
-                .filter(operationLog -> new RecordId(operationLog).equals(recordId))
-                .collect(Collectors.toList());
-    }
-
 }

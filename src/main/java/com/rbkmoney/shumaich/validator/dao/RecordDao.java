@@ -14,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 public class RecordDao {
 
-    final OperationRecordRepo operationRecordRepo;
-    final FailureRecordRepo failureRecordRepo;
+    private final OperationRecordRepo operationRecordRepo;
+    private final FailureRecordRepo failureRecordRepo;
 
     @Transactional
     public void save(List<OperationRecord> operationRecords, List<FailureRecord> failureRecords) {
