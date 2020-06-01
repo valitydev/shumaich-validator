@@ -1,6 +1,5 @@
 package com.rbkmoney.shumaich.validator.utils;
 
-import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.domain.OperationRecord;
 import com.rbkmoney.shumaich.validator.domain.RecordId;
 import lombok.AccessLevel;

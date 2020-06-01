@@ -37,6 +37,7 @@ spring:
           time_zone: UTC
           lob:
             non_contextual_creation: true
+          batch_size: ${kafka.consumer.max-poll-records}
     database-platform: org.hibernate.dialect.PostgreSQL95Dialect
   flyway:
     schemas: shmv
