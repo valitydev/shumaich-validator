@@ -17,6 +17,6 @@ create table shmv.failure_record
 	batch_id                        bigint not null,
 	plan_id                         character varying not null,
 
-    reason                          character varying not null,
+	reason                          character varying not null,
 	primary key (account_id, batch_id, plan_id)
 );
