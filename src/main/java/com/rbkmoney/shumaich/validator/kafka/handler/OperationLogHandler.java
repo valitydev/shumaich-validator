@@ -10,15 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rbkmoney.shumaich.validator.domain.OperationType.*;
 import static com.rbkmoney.shumaich.validator.utils.CheckUtils.*;
 import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterOperationRecordByRecordId;
+import static com.rbkmoney.shumaich.validator.utils.FilterUtils.filterProcessedLogs;
 
 @Slf4j
 @Service
@@ -30,17 +28,17 @@ public class OperationLogHandler {
 
     public void handleEvents(List<ConsumerRecord<String, OperationLog>> messages) {
         //load messages from db in batch
-        final Map<RecordId, List<OperationLog>> operationLogsGroupedByRecordId = messages.stream()
-                .map(ConsumerRecord::value)
+        final Map<RecordId, List<LogWithOffset>> operationLogsGroupedByRecordId = messages.stream()
+                .map(LogWithOffset::new)
                 .collect(Collectors.groupingBy(RecordId::new));
 
         List<OperationRecord> operationRecordsInDb = operationRecordRepo.findAllById(operationLogsGroupedByRecordId.keySet());
 
-        ImmutableTable<RecordId, OperationType, List<OperationLog>> recordIdOperationTypeTable = messages.stream()
-                .map(ConsumerRecord::value)
+        ImmutableTable<RecordId, OperationType, List<LogWithOffset>> recordIdOperationTypeTable = messages.stream()
+                .map(LogWithOffset::new)
                 .collect(ImmutableTable.toImmutableTable(
                         RecordId::new,
-                        OperationLog::getOperationType,
+                        LogWithOffset::getOperationType,
                         Arrays::asList,
                         (a, b) -> Streams.concat(a.stream(), b.stream()).collect(Collectors.toList())));
 
@@ -49,12 +47,11 @@ public class OperationLogHandler {
 
         for (RecordId recordId : operationLogsGroupedByRecordId.keySet()) {
 
-            final List<OperationLog> holds = recordIdOperationTypeTable.get(recordId, HOLD);
-            final List<OperationLog> commits = recordIdOperationTypeTable.get(recordId, COMMIT);
-            final List<OperationLog> rollbacks = recordIdOperationTypeTable.get(recordId, ROLLBACK);
-
             List<OperationRecord> dbRecords = filterOperationRecordByRecordId(operationRecordsInDb, recordId);
 
+            final List<LogWithOffset> holds = filterProcessedLogs(recordIdOperationTypeTable.get(recordId, HOLD), dbRecords);
+            final List<LogWithOffset> commits = filterProcessedLogs(recordIdOperationTypeTable.get(recordId, COMMIT), dbRecords);
+            final List<LogWithOffset> rollbacks = filterProcessedLogs(recordIdOperationTypeTable.get(recordId, ROLLBACK), dbRecords);
 
             processHolds(recordId, holds, dbRecords, failureRecordsToSave);
             processFinalOps(recordId, commits, dbRecords, failureRecordsToSave);
@@ -70,7 +67,7 @@ public class OperationLogHandler {
         recordDao.save(dbRecordsToSave, failureRecordsToSave);
     }
 
-    private void processHolds(RecordId recordId, List<OperationLog> holds, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
+    private void processHolds(RecordId recordId, List<LogWithOffset> holds, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
         if (holds == null || holds.isEmpty()) {
             return;
         }
@@ -93,7 +90,7 @@ public class OperationLogHandler {
         }
     }
 
-    private void processFinalOps(RecordId recordId, List<OperationLog> finalOps, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
+    private void processFinalOps(RecordId recordId, List<LogWithOffset> finalOps, List<OperationRecord> dbRecords, List<FailureRecord> failureRecords) {
         if (finalOps == null || finalOps.isEmpty()) {
             return;
         }
@@ -120,13 +117,22 @@ public class OperationLogHandler {
         }
     }
 
-    private void updateDbRecord(List<OperationRecord> dbRecords, List<OperationLog> finalOps) {
-        dbRecords.get(0).setOperationType(finalOps.get(0).getOperationType());
+    private void updateDbRecord(List<OperationRecord> dbRecords, List<LogWithOffset> finalOps) {
+        final OperationRecord operationRecord = dbRecords.get(0);
+        operationRecord.setOperationType(finalOps.get(0).getOperationType());
+        operationRecord.setKafkaOffset(getMaxOffset(finalOps));
     }
 
-    private OperationRecord getOperationRecord(List<OperationLog> holdsForRecordId) {
+    private OperationRecord getOperationRecord(List<LogWithOffset> holdsForRecordId) {
         final RecordId recordId = holdsForRecordId.stream().map(RecordId::new).findFirst().orElseThrow();
-        return new OperationRecord(recordId, HOLD, holdsForRecordId.get(0).getBatchHash());
+        return new OperationRecord(recordId, HOLD, holdsForRecordId.get(0).getBatchHash(), getMaxOffset(holdsForRecordId));
+    }
+
+    private Long getMaxOffset(List<LogWithOffset> holdsForRecordId) {
+        return holdsForRecordId.stream()
+                .max(Comparator.comparing(LogWithOffset::getKafkaOffset))
+                .get()
+                .getKafkaOffset();
     }
 
     private FailureRecord getFailureRecord(RecordId recordId, FailureReason failureReason) {

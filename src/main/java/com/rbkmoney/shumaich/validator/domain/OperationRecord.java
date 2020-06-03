@@ -20,4 +20,5 @@ public class OperationRecord {
     @Enumerated
     private OperationType operationType;
     private Long batchHash;
+    private Long kafkaOffset;
 }

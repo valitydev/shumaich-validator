@@ -1,6 +1,7 @@
 package com.rbkmoney.shumaich.validator.utils;
 
 import com.rbkmoney.shumaich.validator.TestData;
+import com.rbkmoney.shumaich.validator.domain.LogWithOffset;
 import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.domain.OperationRecord;
 import com.rbkmoney.shumaich.validator.domain.OperationType;
@@ -15,10 +16,10 @@ public class CheckUtilsTest {
 
     @Test
     public void checksumTests() {
-        final List<OperationLog> logsConsistent = List.of(TestData.operationLog(1L),
-                TestData.operationLog(1L));
-        final List<OperationLog> logsInconsistent = List.of(TestData.operationLog(1L),
-                TestData.operationLog(2L));
+        final List<LogWithOffset> logsConsistent = List.of(TestData.logWithOffset(1L),
+                TestData.logWithOffset(1L));
+        final List<LogWithOffset> logsInconsistent = List.of(TestData.logWithOffset(1L),
+                TestData.logWithOffset(2L));
 
         final List<OperationRecord> recordsConsistent = List.of(TestData.operationRecord(1L),
                 TestData.operationRecord(1L));
@@ -37,9 +38,9 @@ public class CheckUtilsTest {
 
     @Test
     public void mixedOpsTest() {
-        final List<OperationLog> commitLogs = List.of(TestData.operationLog(OperationType.COMMIT),
-                TestData.operationLog(OperationType.COMMIT));
-        final List<OperationLog> rollbackLogs = List.of(TestData.operationLog(OperationType.ROLLBACK));
+        final List<LogWithOffset> commitLogs = List.of(TestData.logWithOffset(OperationType.COMMIT),
+                TestData.logWithOffset(OperationType.COMMIT));
+        final List<LogWithOffset> rollbackLogs = List.of(TestData.logWithOffset(OperationType.ROLLBACK));
 
         final List<OperationRecord> commitsRecords = List.of(TestData.operationRecord(OperationType.COMMIT));
         final List<OperationRecord> rollbackRecords = List.of(TestData.operationRecord(OperationType.ROLLBACK));

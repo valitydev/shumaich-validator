@@ -7,6 +7,7 @@ create table shmv.operation_record
 	plan_id                         character varying not null,
 
 	batch_hash                      bigint not null,
+	kafka_offset                    bigint not null,
 	operation_type                  integer not null,
 	primary key (account_id, batch_id, plan_id)
 );

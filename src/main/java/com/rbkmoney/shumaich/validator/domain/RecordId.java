@@ -19,9 +19,9 @@ public class RecordId implements Serializable {
     private Long batchId;
     private String accountId;
 
-    public RecordId(OperationLog operationLog) {
-        this.planId = operationLog.getPlanId();
-        this.batchId = operationLog.getBatchId();
-        this.accountId = operationLog.getAccount().getId();
+    public RecordId(LogWithOffset logWithOffset) {
+        this.planId = logWithOffset.getPlanId();
+        this.batchId = logWithOffset.getBatchId();
+        this.accountId = logWithOffset.getAccount().getId();
     }
 }

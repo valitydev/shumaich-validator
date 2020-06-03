@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.rbkmoney.shumaich.validator.TestData.*;
 import static org.awaitility.Awaitility.await;
@@ -37,6 +38,8 @@ public class ShumaichValidatorIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     FailureRecordRepo failureRecordRepo;
+
+    private AtomicLong increment = new AtomicLong(0);
 
     @After
     public void clear() {
@@ -355,6 +358,25 @@ public class ShumaichValidatorIntegrationTest extends IntegrationTestBase {
         });
     }
 
+    @Test
+    public void offsetAlreadyRead() {
+        givenDb(PLAN_1, BATCH_1, ACCOUNT_1, HASH_1, OperationType.COMMIT, KAFKA_FAR_OFFSET);
+        given(PLAN_1, BATCH_1, ACCOUNT_1, HASH_1, OperationType.HOLD);
+        given(PLAN_1, BATCH_1, ACCOUNT_1, HASH_1, OperationType.COMMIT);
+
+        //then
+        await().untilAsserted(() -> {
+            final List<OperationRecord> records = operationRecordRepo.findAll();
+            assertEquals(1, records.size());
+            assertEquals(OperationType.COMMIT, records.get(0).getOperationType());
+            assertEquals(KAFKA_FAR_OFFSET, records.get(0).getKafkaOffset());
+
+            final List<FailureRecord> failedRecords = failureRecordRepo.findAll();
+            assertEquals(0, failedRecords.size());
+        });
+
+    }
+
     private void given(String plan, Long batch, String account, Long batchHash, OperationType operationType) {
         var producer = producer();
         List.of(
@@ -368,7 +390,11 @@ public class ShumaichValidatorIntegrationTest extends IntegrationTestBase {
     }
 
     private void givenDb(String plan, Long batch, String account, Long batchHash, OperationType operationType) {
-        operationRecordRepo.save(TestData.operationRecord(account, plan, batch, batchHash, operationType));
+        operationRecordRepo.save(TestData.operationRecord(account, plan, batch, batchHash, operationType, KAFKA_EARLY_OFFSET));
+    }
+
+    private void givenDb(String plan, Long batch, String account, Long batchHash, OperationType operationType, Long offset) {
+        operationRecordRepo.save(TestData.operationRecord(account, plan, batch, batchHash, operationType, offset));
     }
 
     private void givenInconsistent(String plan, Long batch, String account, OperationType operationType) {

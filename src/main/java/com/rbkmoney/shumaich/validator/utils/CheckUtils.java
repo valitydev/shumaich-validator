@@ -1,5 +1,6 @@
 package com.rbkmoney.shumaich.validator.utils;
 
+import com.rbkmoney.shumaich.validator.domain.LogWithOffset;
 import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.domain.OperationRecord;
 import lombok.AccessLevel;
@@ -13,9 +14,9 @@ import static com.rbkmoney.shumaich.validator.domain.OperationType.HOLD;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CheckUtils {
     
-    public static boolean finalOperationsMixed(List<OperationRecord> operationRecords, List<OperationLog> finalOps) {
+    public static boolean finalOperationsMixed(List<OperationRecord> operationRecords, List<LogWithOffset> finalOps) {
         return Stream.concat(
-                finalOps.stream().map(OperationLog::getOperationType),
+                finalOps.stream().map(LogWithOffset::getOperationType),
                 operationRecords.stream().map(OperationRecord::getOperationType)
         )
                 .filter(operationType -> !operationType.equals(HOLD))
@@ -31,13 +32,13 @@ public class CheckUtils {
         return dbRecords.stream().anyMatch(operationRecord -> operationRecord.getOperationType().equals(HOLD));
     }
 
-    public static boolean checksumConsistent(List<OperationLog> logs) {
-        return logs.stream().map(OperationLog::getBatchHash).distinct().count() == 1;
+    public static boolean checksumConsistent(List<LogWithOffset> logs) {
+        return logs.stream().map(LogWithOffset::getBatchHash).distinct().count() == 1;
     }
 
-    public static boolean checksumConsistent(List<OperationRecord> records, List<OperationLog> logs) {
+    public static boolean checksumConsistent(List<OperationRecord> records, List<LogWithOffset> logs) {
         return Stream.concat(
-                logs.stream().map(OperationLog::getBatchHash),
+                logs.stream().map(LogWithOffset::getBatchHash),
                 records.stream().map(OperationRecord::getBatchHash)
         ).distinct().count() == 1;
     }
