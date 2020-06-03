@@ -131,7 +131,7 @@ public class OperationLogHandler {
     private Long getMaxOffset(List<LogWithOffset> holdsForRecordId) {
         return holdsForRecordId.stream()
                 .max(Comparator.comparing(LogWithOffset::getKafkaOffset))
-                .get()
+                .orElseThrow()
                 .getKafkaOffset();
     }
 
