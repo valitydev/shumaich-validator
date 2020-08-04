@@ -14,8 +14,6 @@ import java.util.Map;
 
 public class TestData {
 
-    private static MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.ALL, 15, 1);
-
     public static final String OPERATION_LOG_TOPIC = "operation_log";
 
     public static final Long ACCOUNT_1 = 1L;
@@ -53,16 +51,6 @@ public class TestData {
         return operationLog;
     }
 
-    public static LogWithOffset logWithOffset(Long accountId, String planId, Long batchId, Long batchHash, OperationType operationType) {
-        return LogWithOffset.builder()
-                .account(new Account(accountId, "RUB"))
-                .planId(planId)
-                .batchId(batchId)
-                .batchHash(batchHash)
-                .operationType(operationType)
-                .build();
-    }
-
     public static LogWithOffset logWithOffset(Long batchHash) {
         return LogWithOffset.builder()
                 .batchHash(batchHash)
@@ -91,8 +79,4 @@ public class TestData {
         return new OperationRecord(null, null, batchHash, null);
     }
 
-    @SneakyThrows
-    public static <T extends TBase> T fillTBaseObject(T tBase, Class<T> type) {
-        return mockTBaseProcessor.process(tBase, new TBaseHandler<>(type));
-    }
 }
