@@ -1,14 +1,14 @@
 package com.rbkmoney.shumaich.validator.config;
 
+import com.rbkmoney.damsel.shumaich.OperationLog;
 import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import com.rbkmoney.shumaich.validator.config.properties.KafkaSslProperties;
-import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.kafka.serde.OperationLogDeserializer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -53,7 +53,7 @@ public class KafkaConfig {
     public Map<String, Object> consumerConfigs(KafkaSslProperties kafkaSslProperties) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OperationLogDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
@@ -80,19 +80,19 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OperationLog> consumerFactory(KafkaSslProperties kafkaSslProperties) {
+    public ConsumerFactory<Long, OperationLog> consumerFactory(KafkaSslProperties kafkaSslProperties) {
         return new DefaultKafkaConsumerFactory<>(consumerConfigs(kafkaSslProperties));
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, OperationLog>> kafkaListenerContainerFactory(
-            ConsumerFactory<String, OperationLog> consumerFactory) {
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, OperationLog>> kafkaListenerContainerFactory(
+            ConsumerFactory<Long, OperationLog> consumerFactory) {
         return createConcurrentFactory(consumerFactory, concurrency);
     }
 
-    private KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, OperationLog>> createConcurrentFactory(
-            ConsumerFactory<String, OperationLog> consumerFactory, int threadsNumber) {
-        ConcurrentKafkaListenerContainerFactory<String, OperationLog> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    private KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, OperationLog>> createConcurrentFactory(
+            ConsumerFactory<Long, OperationLog> consumerFactory, int threadsNumber) {
+        ConcurrentKafkaListenerContainerFactory<Long, OperationLog> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         factory.getContainerProperties().setAckOnError(false);

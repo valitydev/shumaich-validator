@@ -2,7 +2,7 @@ create schema if not exists shmv;
 
 create table shmv.operation_record
 (
-	account_id                      character varying not null,
+	account_id                      bigint not null,
 	batch_id                        bigint not null,
 	plan_id                         character varying not null,
 
@@ -14,7 +14,7 @@ create table shmv.operation_record
 
 create table shmv.failure_record
 (
-	account_id                      character varying not null,
+	account_id                      bigint not null,
 	batch_id                        bigint not null,
 	plan_id                         character varying not null,
 

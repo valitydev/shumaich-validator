@@ -14,6 +14,6 @@ import javax.persistence.Id;
 @AllArgsConstructor
 public class Account {
     @Id
-    private String id;
+    private Long id;
     private String currencySymbolicCode;
 }

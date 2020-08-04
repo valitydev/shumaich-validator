@@ -1,7 +1,7 @@
 package com.rbkmoney.shumaich.validator.kafka.listener;
 
+import com.rbkmoney.damsel.shumaich.OperationLog;
 import com.rbkmoney.kafka.common.util.LogUtil;
-import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.kafka.handler.OperationLogHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ public class OperationLogKafkaListener {
     private final OperationLogHandler operationLogHandler;
 
     @KafkaListener(topics = "${kafka.consumer.topic}", containerFactory = "kafkaListenerContainerFactory")
-    public void handle(List<ConsumerRecord<String, OperationLog>> messages, Acknowledgment ack) {
+    public void handle(List<ConsumerRecord<Long, OperationLog>> messages, Acknowledgment ack) {
         log.info("Got operationLog batch with size: {}", messages.size());
         operationLogHandler.handleEvents(messages);
         ack.acknowledge();
