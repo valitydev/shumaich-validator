@@ -1,7 +1,6 @@
 package com.rbkmoney.shumaich.validator;
 
 import com.rbkmoney.damsel.shumaich.OperationLog;
-
 import com.rbkmoney.damsel.shumaich.OperationType;
 import com.rbkmoney.shumaich.validator.domain.FailureReason;
 import com.rbkmoney.shumaich.validator.domain.FailureRecord;
@@ -13,7 +12,6 @@ import com.rbkmoney.shumaich.validator.repo.FailureRecordRepo;
 import com.rbkmoney.shumaich.validator.repo.OperationRecordRepo;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;

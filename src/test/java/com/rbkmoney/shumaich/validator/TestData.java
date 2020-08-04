@@ -1,16 +1,10 @@
 package com.rbkmoney.shumaich.validator;
 
 import com.rbkmoney.damsel.shumaich.OperationLog;
-import com.rbkmoney.geck.serializer.kit.mock.FieldHandler;
-import com.rbkmoney.geck.serializer.kit.mock.MockMode;
-import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
-import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
-import com.rbkmoney.shumaich.validator.domain.*;
-import lombok.SneakyThrows;
-import org.apache.thrift.TBase;
-
-import java.time.Instant;
-import java.util.Map;
+import com.rbkmoney.shumaich.validator.domain.LogWithOffset;
+import com.rbkmoney.shumaich.validator.domain.OperationRecord;
+import com.rbkmoney.shumaich.validator.domain.OperationType;
+import com.rbkmoney.shumaich.validator.domain.RecordId;
 
 public class TestData {
 
