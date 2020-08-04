@@ -2,15 +2,12 @@ package com.rbkmoney.shumaich.validator.utils;
 
 import com.rbkmoney.shumaich.validator.TestData;
 import com.rbkmoney.shumaich.validator.domain.LogWithOffset;
-import com.rbkmoney.shumaich.validator.domain.OperationLog;
 import com.rbkmoney.shumaich.validator.domain.OperationRecord;
 import com.rbkmoney.shumaich.validator.domain.OperationType;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class CheckUtilsTest {
 

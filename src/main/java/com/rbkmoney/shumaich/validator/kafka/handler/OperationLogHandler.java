@@ -2,6 +2,7 @@ package com.rbkmoney.shumaich.validator.kafka.handler;
 
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Streams;
+import com.rbkmoney.damsel.shumaich.OperationLog;
 import com.rbkmoney.shumaich.validator.dao.RecordDao;
 import com.rbkmoney.shumaich.validator.domain.*;
 import com.rbkmoney.shumaich.validator.repo.OperationRecordRepo;
@@ -26,7 +27,7 @@ public class OperationLogHandler {
     private final RecordDao recordDao;
     private final OperationRecordRepo operationRecordRepo;
 
-    public void handleEvents(List<ConsumerRecord<String, OperationLog>> messages) {
+    public void handleEvents(List<ConsumerRecord<Long, OperationLog>> messages) {
         //load messages from db in batch
         final Map<RecordId, List<LogWithOffset>> operationLogsGroupedByRecordId = messages.stream()
                 .map(LogWithOffset::new)

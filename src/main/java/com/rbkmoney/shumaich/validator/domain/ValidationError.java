@@ -1,5 +1,5 @@
 package com.rbkmoney.shumaich.validator.domain;
 
-public enum ValidationStatus {
+public enum ValidationError {
     HOLD_NOT_EXIST
 }

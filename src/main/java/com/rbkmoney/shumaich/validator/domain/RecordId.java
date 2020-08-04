@@ -17,7 +17,7 @@ public class RecordId implements Serializable {
 
     private String planId;
     private Long batchId;
-    private String accountId;
+    private Long accountId;
 
     public RecordId(LogWithOffset logWithOffset) {
         this.planId = logWithOffset.getPlanId();

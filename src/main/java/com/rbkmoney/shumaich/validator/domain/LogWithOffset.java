@@ -15,18 +15,40 @@ public class LogWithOffset {
     private OperationType operationType;
     private Account account;
     private Long batchHash;
-    private ValidationStatus validationStatus;
+    private ValidationError validationError;
 
     private Long kafkaOffset;
 
-    public LogWithOffset(ConsumerRecord<String, OperationLog> consumerRecord) {
-        final OperationLog operationLog = consumerRecord.value();
+    public LogWithOffset(ConsumerRecord<Long, com.rbkmoney.damsel.shumaich.OperationLog> consumerRecord) {
+        com.rbkmoney.damsel.shumaich.OperationLog operationLog = consumerRecord.value();
         this.planId = operationLog.getPlanId();
         this.batchId = operationLog.getBatchId();
-        this.operationType = operationLog.getOperationType();
-        this.account = operationLog.getAccount();
+        this.operationType = convertOperationType(operationLog.getOperationType());
+        this.account = new Account(operationLog.getAccount().getId(), operationLog.getAccount().getCurrencySymbolicCode());
         this.batchHash = operationLog.getBatchHash();
-        this.validationStatus = operationLog.getValidationStatus();
+        this.validationError = operationLog.getValidationError() != null ? convertValidationError(operationLog.getValidationError()) : null;
         this.kafkaOffset = consumerRecord.offset();
+    }
+
+    private OperationType convertOperationType(com.rbkmoney.damsel.shumaich.OperationType operationType) {
+        switch (operationType) {
+            case ROLLBACK:
+                return OperationType.ROLLBACK;
+            case COMMIT:
+                return OperationType.COMMIT;
+            case HOLD:
+                return OperationType.HOLD;
+            default:
+                throw new RuntimeException("No such OperationType");
+        }
+    }
+
+    private ValidationError convertValidationError(com.rbkmoney.damsel.shumaich.ValidationError validationError) {
+        switch (validationError) {
+            case HOLD_NOT_EXIST:
+                return ValidationError.HOLD_NOT_EXIST;
+            default:
+                throw new RuntimeException("No such ValidationError");
+        }
     }
 }
